@@ -137,8 +137,12 @@ class AdvancedViewsCache extends CachePluginBase {
    */
   public function buildCacheTagOptions(&$form, FormStateInterface $form_state) {
     $cache_tags_docs = Link::fromTextAndUrl('documentation', Url::fromUri('https://www.drupal.org/docs/8/api/cache-api/cache-tags'))->toString();
-
     $cache_tags_exclude = array_map(function($c) { return '- '.$c; }, $this->options['cache_tags_exclude']);
+    // Filter out some of the default cache tags we don't care about.
+    // This should mostly be the entity_type list cache tags ex. node_list.
+    $default_cache_tags = array_diff(parent::getCacheTags(), [ 'extensions', 'config:views.view.'.$this->view->id() ]);
+    $cache_tags = !empty($this->options['cache_tags']) ? $this->options['cache_tags'] : $default_cache_tags;
+
     $form['cache_tags'] = [
       '#type' => 'details',
       '#title' => $this->t('Cache Tags'),
@@ -150,7 +154,7 @@ class AdvancedViewsCache extends CachePluginBase {
       '#type' => 'textarea',
       '#title' => $this->t('Cache Tags'),
       '#description' => $this->t('List cache tags (separated by new lines) that should invalidate the cache for this view, separated by new lines. Note that this does not control the invalidation of custom tags.'),
-      '#default_value' => implode("\n", array_merge($this->options['cache_tags'] + $cache_tags_exclude)),
+      '#default_value' => implode("\n", array_merge($cache_tags + $cache_tags_exclude)),
     );
 
     $optgroup_arguments = (string) t('Arguments');
@@ -301,7 +305,7 @@ class AdvancedViewsCache extends CachePluginBase {
     $cache_tags = preg_split('/\r\n|[\r\n]+/', $cache_tags) ?: [];
     $cache_tags = array_filter(array_map('trim', $cache_tags));
     $cache_tags_exclude = [];
-    foreach ($cache_tags_exclude as $i => $cache_tag) {
+    foreach ($cache_tags as $i => $cache_tag) {
       if (strpos($cache_tag, '-') === 0) {
         unset($cache_tags[$i]);
         $cache_tags_exclude[] = trim($cache_tag, '- ');
@@ -348,7 +352,7 @@ class AdvancedViewsCache extends CachePluginBase {
     // @see Drupal\views\ViewExecutable::_postExecute
     // By default only handlers (ex. argument, filter, sort) are invoked after
     // view execution to update the cache tags based on rows.
-    // We are also checking if aplugin is a CacheableDependencyInterface then
+    // We are also checking if a plugin is a CacheableDependencyInterface then
     // add it's cache_tags.
     foreach (Views::getPluginTypes('plugin') as $plugin_type) {
       $plugin = $this->view->display_handler->getPlugin($plugin_type);
@@ -357,15 +361,23 @@ class AdvancedViewsCache extends CachePluginBase {
       }
     }
     if (!empty($cache_tags)) {
-      $default_cache_tags = $this->view->storage->getCacheTags();
+      $default_cache_tags = parent::getCacheTags();
       $cache_tags =  array_map(function ($tag){
         $value = $this->view->getStyle()->tokenizeValue($tag, 0);
         return \Drupal::token()->replace($value);
       }, $cache_tags);
-      return Cache::mergeTags($cache_tags, $default_cache_tags);
+      $cache_tags = Cache::mergeTags($cache_tags, $default_cache_tags);
     } else {
-      parent::getCacheTags();
+      $cache_tags = parent::getCacheTags();
     }
+
+    // Remove cache tags marked for exclusion.
+    if (!empty($this->options['cache_tags_exclude'])) {
+      $cache_tags_exclude = $this->options['cache_tags_exclude'];
+      $cache_tags = array_diff($cache_tags, $cache_tags_exclude);
+    }
+
+    return $cache_tags;
   }
 
   /**

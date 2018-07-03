@@ -1,0 +1,14 @@
+<?php
+
+use Drupal\node\NodeInterface;
+use Drupal\Core\Cache\Cache;
+
+/**
+ * Invalidate a custom node list cache tag on node save.
+ *
+ * @param $node
+ */
+function views_advanced_cache_test_common_node_presave(NodeInterface $node) {
+  $tags = ['vact:node_list:' . $node->getType()];
+  Cache::invalidateTags($tags);
+}

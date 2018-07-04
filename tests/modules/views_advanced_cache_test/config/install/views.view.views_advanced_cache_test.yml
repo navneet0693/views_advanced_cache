@@ -57,10 +57,24 @@ display:
           sort_asc_label: Asc
           sort_desc_label: Desc
       pager:
-        type: some
+        type: mini
         options:
           items_per_page: 5
           offset: 0
+          id: 0
+          total_pages: null
+          tags:
+            previous: ‹‹
+            next: ››
+          expose:
+            items_per_page: false
+            items_per_page_label: 'Items per page'
+            items_per_page_options: '5, 10, 25, 50'
+            items_per_page_options_all: false
+            items_per_page_options_all_label: '- All -'
+            offset: false
+            offset_label: Offset
+          strict_query_args: 0
       style:
         type: default
       row:
@@ -178,6 +192,7 @@ display:
       contexts:
         - 'languages:language_content'
         - 'languages:language_interface'
+        - 'url.query_args'
         - 'user.node_grants:view'
         - user.permissions
       tags: {  }
@@ -205,6 +220,7 @@ display:
       contexts:
         - 'languages:language_content'
         - 'languages:language_interface'
+        - 'url.query_args'
         - 'user.node_grants:view'
         - user.permissions
       tags: {  }
@@ -214,6 +230,7 @@ display:
     display_title: Page
     position: 2
     display_options:
+      path: views-advanced-cache-test
       cache:
         type: advanced_views_cache
         options:
@@ -225,7 +242,6 @@ display:
           results_lifespan_custom: ''
           output_lifespan: '-1'
           output_lifespan_custom: ''
-      path: views-advanced-cache-test
       defaults:
         cache: false
     cache_metadata:
@@ -233,6 +249,7 @@ display:
       contexts:
         - 'languages:language_content'
         - 'languages:language_interface'
+        - 'url.query_args'
         - 'user.node_grants:view'
         - user.permissions
       tags: {  }

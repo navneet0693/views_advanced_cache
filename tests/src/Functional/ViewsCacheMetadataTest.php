@@ -20,6 +20,10 @@ class ViewsCacheMetadataTest extends BrowserTestBase {
 
   protected $strictConfigSchema = FALSE;
 
+  // # Tests.
+  /**
+   * Test changing the view cache metadata.
+   */
   public function testCacheMetadata() {
     $view_name = 'views_advanced_cache_test';
     $display_name = 'block_test';
@@ -48,8 +52,8 @@ class ViewsCacheMetadataTest extends BrowserTestBase {
 
     // Test adding / removing cache contexts.
     $query_args_context = in_array('url.query_args:page', $element['#cache']['contexts']) ? 'url.query_args:page' : 'url.query_args';
-    $view = Views::getView($view_name);
     $this->assertTrue(in_array($query_args_context, $element['#cache']['contexts']), 'The view has the url.query_args cache context.');
+    $view = Views::getView($view_name);
     $cacheOptions = $this->getCacheOptions($view->storage, $display_name);
     $cacheOptions = NestedArray::mergeDeep($cacheOptions, [
       'cache_contexts' => ['url.query_args:test'],
@@ -79,14 +83,47 @@ class ViewsCacheMetadataTest extends BrowserTestBase {
   }
 
   /**
+   * Test argument replacement in cache tags.
+   */
+  public function testArgumentReplacement() {
+    $view_name = 'views_advanced_cache_test';
+    $display_name = 'block_args';
+
+    // Create some test nodes.
+    /** @var \Drupal\node\NodeInterface[] $nodes */
+    $nodes = [];
+    for ($i = 1; $i <= 2; $i++) {
+      $nodes[] = $this->drupalCreateNode(['title' => "Test $i", 'type' => 'test']);
+    }
+    $nid = $nodes[0]->id();
+
+    // Render the view with the nid argument.
+    $view = Views::getView($view_name);
+    $element = $this->render($view, $display_name, [$nid]);
+    // And verify that our test cache tag with the nid is present.
+    $this->assertTrue(in_array("node_test:$nid", $element['#cache']['tags']), 'The view has the node_test{nid} cache tag.');
+  }
+
+  // # Helpers.
+  /**
    * @param $view
+   * @param $display_name
+   * @param array $args
    * @return array
    */
-  protected function render(ViewExecutable $view, $display_name) {
+  protected function render(ViewExecutable $view, $display_name, $args = []) {
     $view->setDisplay($display_name);
+    if(!empty($args)) {
+      $view->setArguments($args);
+    }
     $view->preExecute();
     $view->execute($display_name);
-    return $view->buildRenderable($display_name);
+    $element = $view->buildRenderable($display_name, $args);
+    if (!empty($args)) {
+      $element['#cache']['keys'][] = 'args';
+      $element['#cache']['keys'][] = implode(',', $args);
+    }
+    return $element;
   }
 
   /**
@@ -104,11 +141,6 @@ class ViewsCacheMetadataTest extends BrowserTestBase {
   protected function setCacheOptions(View $view, $display_name, array $options) {
     $display = &$view->getDisplay($display_name);
     $display['display_options']['cache']['options'] = $options;
-  }
-
-  public function _testArgumentReplacement() {
-    // TODO
-    $this->markTestIncomplete();
   }
 
 }

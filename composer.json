@@ -3,11 +3,5 @@
   "type": "drupal-module",
   "description": "Take more control of views caching with the ability to specify cache tags and contexts.",
   "license": "GPL-2.0+",
-  "minimum-stability": "dev",
-  "repositories": [
-    {
-      "type": "vcs",
-      "url": "git@bitbucket.org:interscoperecords/views_advanced_cache.git"
-    }
-  ]
+  "minimum-stability": "dev"
 }

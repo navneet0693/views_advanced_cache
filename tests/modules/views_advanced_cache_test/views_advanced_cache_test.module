@@ -13,7 +13,7 @@ use Drupal\Core\Cache\Cache;
  * @param \Drupal\node\NodeInterface $node
  *   The node being saved.
  */
-function views_advanced_cache_test_common_node_presave(NodeInterface $node) {
+function views_advanced_cache_test_node_presave(NodeInterface $node) {
   $tags = ['vact:node_list:' . $node->getType()];
   Cache::invalidateTags($tags);
 }

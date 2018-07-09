@@ -2,7 +2,6 @@
 
 namespace Drupal\Tests\views_advanced_cache\Functional;
 
-use Drupal;
 use Drupal\Tests\BrowserTestBase;
 use Drupal\Component\Utility\NestedArray;
 use Drupal\views\Views;
@@ -10,7 +9,7 @@ use Drupal\views\ViewExecutable;
 use Drupal\views\Entity\View;
 
 /**
- * Class ViewsCacheMetadataTest
+ * Class ViewsCacheMetadataTest.
  *
  * @group views_advanced_cache
  */
@@ -106,14 +105,11 @@ class ViewsCacheMetadataTest extends BrowserTestBase {
 
   // # Helpers.
   /**
-   * @param $view
-   * @param $display_name
-   * @param array $args
-   * @return array
+   * Build a renderable array for the view display.
    */
-  protected function render(ViewExecutable $view, $display_name, $args = []) {
+  protected function render(ViewExecutable $view, $display_name, array $args = []) {
     $view->setDisplay($display_name);
-    if(!empty($args)) {
+    if (!empty($args)) {
       $view->setArguments($args);
     }
     $view->preExecute();
@@ -127,16 +123,14 @@ class ViewsCacheMetadataTest extends BrowserTestBase {
   }
 
   /**
-   * @param $view
-   * @return mixed
+   * Get the cache plugin options for a view display.
    */
   protected function getCacheOptions(View $view, $display_name) {
     return $view->getDisplay($display_name)['display_options']['cache']['options'] ?? [];
   }
 
   /**
-   * @param $view
-   * @param array $options
+   * Set the cache plugin options for a view display.
    */
   protected function setCacheOptions(View $view, $display_name, array $options) {
     $display = &$view->getDisplay($display_name);

@@ -1,12 +1,17 @@
 <?php
 
+/**
+ * @file
+ * A test module for views_advanced_cache.
+ */
 use Drupal\node\NodeInterface;
 use Drupal\Core\Cache\Cache;
 
 /**
  * Invalidate a custom node list cache tag on node save.
  *
- * @param $node
+ * @param \Drupal\node\NodeInterface $node
+ *   The node being saved.
  */
 function views_advanced_cache_test_common_node_presave(NodeInterface $node) {
   $tags = ['vact:node_list:' . $node->getType()];

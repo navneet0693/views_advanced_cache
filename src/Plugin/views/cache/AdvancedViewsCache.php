@@ -14,6 +14,8 @@ use Drupal\views\Plugin\views\cache\CachePluginBase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
+ * Advanced cache metadata views cache plugin.
+ *
  * Advanced caching of query results for Views displays allowing the
  * specification of cache tags, cache contexts, and output / results cache
  * lifetime (which is used to calculate max-age).
@@ -42,15 +44,18 @@ class AdvancedViewsCache extends CachePluginBase {
 
   protected $lifespans = [60, 300, 900, 1800, 3600, 21600, 43200, 86400, 604800];
 
-  public $lifespan_options = [];
+  public $lifespanOptions = [];
 
+  /**
+   * {@inheritdoc}
+   */
   public function __construct(array $configuration, $plugin_id, $plugin_definition, DateFormatterInterface $date_formatter) {
     $this->dateFormatter = $date_formatter;
 
     parent::__construct($configuration, $plugin_id, $plugin_definition);
 
-    $this->lifespan_options = array_map([$this->dateFormatter, 'formatInterval'], array_combine($this->lifespans, $this->lifespans));
-    $this->lifespan_options = [-1 => $this->t('Always cache'), 0 => $this->t('Never cache')] + $this->lifespan_options + ['custom' => $this->t('Custom')];
+    $this->lifespanOptions = array_map([$this->dateFormatter, 'formatInterval'], array_combine($this->lifespans, $this->lifespans));
+    $this->lifespanOptions = [-1 => $this->t('Always cache'), 0 => $this->t('Never cache')] + $this->lifespanOptions + ['custom' => $this->t('Custom')];
   }
 
   /**
@@ -69,21 +74,21 @@ class AdvancedViewsCache extends CachePluginBase {
    * {@inheritdoc}
    */
   public function summaryTitle() {
-    // Cache Tags
+    // Display a summary of: cache tags,
     $num_cache_tags = count(array_merge($this->options['cache_tags'], $this->options['cache_tags_exclude']) ?: []);
     $cache_tags = '';
     if ($num_cache_tags > 0) {
       $cache_tags = "$num_cache_tags tags";
     }
 
-    // Cache Contexts
+    // cache contexts,
     $num_cache_contexts = count(array_merge($this->options['cache_contexts'], $this->options['cache_contexts_exclude']) ?: []);
     $cache_contexts = '';
     if ($num_cache_contexts > 0) {
       $cache_contexts = "$num_cache_contexts contexts";
     }
 
-    // Max-Age
+    // and max-age.
     $results_lifespan = $this->getLifespan('results');
     $output_lifespan = $this->getLifespan('output');
     $lifetime = '';
@@ -98,13 +103,13 @@ class AdvancedViewsCache extends CachePluginBase {
    */
   protected function defineOptions() {
     $options = parent::defineOptions();
-    // Cache Tags
-    $options['cache_tags'] = array('default' => []);
-    $options['cache_tags_exclude'] = array('default' => []);
-    // Cache Contexts
-    $options['cache_contexts'] = array('default' => []);
-    $options['cache_contexts_exclude'] = array('default' => []);
-    // Max Age
+    // Cache Tags.
+    $options['cache_tags'] = ['default' => []];
+    $options['cache_tags_exclude'] = ['default' => []];
+    // Cache Contexts.
+    $options['cache_contexts'] = ['default' => []];
+    $options['cache_contexts_exclude'] = ['default' => []];
+    // Max Age.
     $options['results_lifespan'] = ['default' => -1];
     $options['results_lifespan_custom'] = ['default' => NULL];
     $options['output_lifespan'] = ['default' => -1];
@@ -125,22 +130,22 @@ class AdvancedViewsCache extends CachePluginBase {
   }
 
   /**
-   * Select cache tags for this view. By prefixing the tag with a "-" it will
+   * Build the cache metadata options form.
+   *
+   * By prefixing the tag with a "-" it will
    * be removed from the cache metadata. Removing cache tags should be
    * used sparingly but may be useful to resolve issues uneccessary cache tags
-   * added by other modules (ex. https://www.drupal.org/project/drupal/issues/2352175)
+   * added by other modules
+   * (ex. https://www.drupal.org/project/drupal/issues/2352175).
    *
    * @see https://www.drupal.org/project/views_custom_cache_tag
-   *
-   * @param $form
-   * @param FormStateInterface $form_state
    */
-  public function buildCacheTagOptions(&$form, FormStateInterface $form_state) {
+  public function buildCacheTagOptions(array &$form, FormStateInterface $form_state) {
     $cache_tags_docs = Link::fromTextAndUrl('documentation', Url::fromUri('https://www.drupal.org/docs/8/api/cache-api/cache-tags'))->toString();
-    $cache_tags_exclude = array_map(function($c) { return '- '.$c; }, $this->options['cache_tags_exclude']);
+    $cache_tags_exclude = array_map(function ($c) { return '- ' . $c; }, $this->options['cache_tags_exclude']);
     // Filter out some of the default cache tags we don't care about.
     // This should mostly be the entity_type list cache tags ex. node_list.
-    $default_cache_tags = array_diff(parent::getCacheTags(), [ 'extensions', 'config:views.view.'.$this->view->id() ]);
+    $default_cache_tags = array_diff(parent::getCacheTags(), ['extensions', 'config:views.view.' . $this->view->id()]);
     $cache_tags = !empty($this->options['cache_tags']) ? $this->options['cache_tags'] : $default_cache_tags;
 
     $form['cache_tags'] = [
@@ -150,22 +155,22 @@ class AdvancedViewsCache extends CachePluginBase {
       '#open' => TRUE,
     ];
 
-    $form['cache_tags']['cache_tags'] = array(
+    $form['cache_tags']['cache_tags'] = [
       '#type' => 'textarea',
       '#title' => $this->t('Cache Tags'),
       '#description' => $this->t('List cache tags (separated by new lines) that should invalidate the cache for this view, separated by new lines. Note that this does not control the invalidation of custom tags.'),
       '#default_value' => implode("\n", array_merge($cache_tags + $cache_tags_exclude)),
-    );
+    ];
 
     $optgroup_arguments = (string) t('Arguments');
 
     $options = [];
-    //$globalTokens = $this->getAvailableGlobalTokens(FALSE, ['current-user']);
+    // $globalTokens = $this->getAvailableGlobalTokens(FALSE, ['current-user']);
     $options['current-user']['[current-user:uid]'] = $this->t('Current User: The current user id.');
 
     foreach ($this->view->display_handler->getHandlers('argument') as $arg => $handler) {
-      $options[$optgroup_arguments]["{{ arguments.$arg }}"] = $this->t('@argument title', array('@argument' => $handler->adminLabel()));
-      $options[$optgroup_arguments]["{{ raw_arguments.$arg }}"] = $this->t('@argument input', array('@argument' => $handler->adminLabel()));
+      $options[$optgroup_arguments]["{{ arguments.$arg }}"] = $this->t('@argument title', ['@argument' => $handler->adminLabel()]);
+      $options[$optgroup_arguments]["{{ raw_arguments.$arg }}"] = $this->t('@argument input', ['@argument' => $handler->adminLabel()]);
     }
 
     // We have some options, so make a list.
@@ -191,11 +196,10 @@ class AdvancedViewsCache extends CachePluginBase {
   }
 
   /**
-   * Specify cache contexts to be used by the view. By prefixing the context
-   * with a "-" it will be removed from the cache metadata.
+   * Specify cache contexts to be used by the view.
    *
-   * @param $form
-   * @param FormStateInterface $form_state
+   * By prefixing the context with a "-" it will be removed
+   * from the cache metadata.
    */
   public function buildCacheContextOptions(&$form, FormStateInterface $form_state) {
     $cache_context_docs = Link::fromTextAndUrl('documentation', Url::fromUri('https://www.drupal.org/docs/8/api/cache-api/cache-contexts'))->toString();
@@ -206,22 +210,19 @@ class AdvancedViewsCache extends CachePluginBase {
       '#open' => TRUE,
     ];
 
-    $cache_contexts_exclude = array_map(function($c) { return '- '.$c; }, $this->options['cache_contexts_exclude']);
-    $form['cache_contexts']['cache_contexts'] = array(
+    $cache_contexts_exclude = array_map(function ($c) { return '- ' . $c; }, $this->options['cache_contexts_exclude']);
+    $form['cache_contexts']['cache_contexts'] = [
       '#type' => 'textarea',
       '#title' => $this->t('Cache Contexts'),
       '#default_value' => implode("\n", array_merge($this->options['cache_contexts'], $cache_contexts_exclude)) ,
       '#description' => $this->t('List cache contexts (separated by new lines).'),
-    );
+    ];
   }
 
   /**
    * Specify output and results cache lifetimes.
    *
-   * @see Drupal\views\Plugin\cache\Time
-   *
-   * @param $form
-   * @param FormStateInterface $form_state
+   * @see \Drupal\views\Plugin\cache\Time
    */
   public function buildLifespanOptions(&$form, FormStateInterface $form_state) {
     $form['cache_lifespan'] = [
@@ -234,7 +235,7 @@ class AdvancedViewsCache extends CachePluginBase {
       '#type' => 'select',
       '#title' => $this->t('Query results'),
       '#description' => $this->t('The length of time raw query results should be cached. When using display suite these results will only contain the node ids and other fields added to the view. The rendered entity will use the render cache.'),
-      '#options' => $this->lifespan_options,
+      '#options' => $this->lifespanOptions,
       '#default_value' => $this->options['results_lifespan'],
     ];
     $form['cache_lifespan']['results_lifespan_custom'] = [
@@ -255,7 +256,7 @@ class AdvancedViewsCache extends CachePluginBase {
       '#type' => 'select',
       '#title' => $this->t('Rendered output'),
       '#description' => $this->t('The length of time rendered HTML output should be cached.'),
-      '#options' => $this->lifespan_options,
+      '#options' => $this->lifespanOptions,
       '#default_value' => $this->options['output_lifespan'],
     ];
     $form['cache_lifespan']['output_lifespan_custom'] = [
@@ -276,9 +277,6 @@ class AdvancedViewsCache extends CachePluginBase {
 
   /**
    * Perform validation and cleanup of plugin configuration.
-   *
-   * @param $form
-   * @param FormStateInterface $form_state
    */
   public function validateOptionsForm(&$form, FormStateInterface $form_state) {
     $lifespan = [];
@@ -288,7 +286,8 @@ class AdvancedViewsCache extends CachePluginBase {
       $custom = $cache_lifespan[$field] == 'custom';
       if ($custom && !is_numeric($cache_lifespan[$field . '_custom'])) {
         $form_state->setError($form['cache_lifespan'][$field . '_custom'], $this->t('Custom time values must be numeric.'));
-      } else {
+      }
+      else {
         $lifespan[$field] = (int) ($custom ? $cache_lifespan[$field . '_custom'] : $cache_lifespan[$field]);
       }
     }
@@ -336,7 +335,7 @@ class AdvancedViewsCache extends CachePluginBase {
     foreach (['cache_tags', 'cache_contexts', 'cache_lifespan'] as $key) {
       $values = $form_state->getValue(['cache_options', $key]);
       $form_state->unsetValue(['cache_options', $key]);
-      foreach($values as $option => $value) {
+      foreach ($values as $option => $value) {
         $form_state->setValue(['cache_options', $option], $value);
       }
     }
@@ -362,12 +361,13 @@ class AdvancedViewsCache extends CachePluginBase {
     }
     if (!empty($cache_tags)) {
       $default_cache_tags = parent::getCacheTags();
-      $cache_tags =  array_map(function ($tag){
+      $cache_tags = array_map(function ($tag) {
         $value = $this->view->getStyle()->tokenizeValue($tag, 0);
         return \Drupal::token()->replace($value);
       }, $cache_tags);
       $cache_tags = Cache::mergeTags($cache_tags, $default_cache_tags);
-    } else {
+    }
+    else {
       $cache_tags = parent::getCacheTags();
     }
 
@@ -396,9 +396,12 @@ class AdvancedViewsCache extends CachePluginBase {
 
   /**
    * Get the cache lifetime for results or output.
-   * @param $type
-   *  "results" or "output" for the corresponding cache.
+   *
+   * @param string|int $type
+   *   A value of "results" or "output" for the corresponding cache.
+   *
    * @return int
+   *   The cache lifespan.
    */
   protected function getLifespan($type) {
     $lifespan = $this->options[$type . '_lifespan'] == 'custom' ? $this->options[$type . '_lifespan_custom'] : $this->options[$type . '_lifespan'];
@@ -413,7 +416,8 @@ class AdvancedViewsCache extends CachePluginBase {
     if ($lifespan >= 0) {
       $cutoff = REQUEST_TIME - $lifespan;
       return $cutoff;
-    } else {
+    }
+    else {
       return NULL;
     }
   }

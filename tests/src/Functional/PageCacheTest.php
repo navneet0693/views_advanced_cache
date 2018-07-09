@@ -2,14 +2,17 @@
 
 namespace Drupal\Tests\views_advanced_cache\Functional;
 
-use Drupal;
 use Drupal\Tests\BrowserTestBase;
 use Drupal\Core\Url;
 use Drupal\Tests\system\Functional\Cache\AssertPageCacheContextsAndTagsTrait;
 use Drupal\views\Entity\View;
 
-class PageCacheTest extends BrowserTestBase
-{
+/**
+ * Class PageCacheTest.
+ *
+ * @package Drupal\Tests\views_advanced_cache\Functional
+ */
+class PageCacheTest extends BrowserTestBase {
 
   use AssertPageCacheContextsAndTagsTrait;
 
@@ -28,7 +31,7 @@ class PageCacheTest extends BrowserTestBase
     }
     $node_cache_tags = [];
     foreach ($nodes as $node) {
-      $node_cache_tags[] = 'node:'. $node->id(0);
+      $node_cache_tags[] = 'node:' . $node->id();
     }
 
     // And load the page view with our test cache contexts and tags.

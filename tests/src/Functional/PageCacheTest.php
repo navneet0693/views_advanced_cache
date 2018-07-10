@@ -10,7 +10,7 @@ use Drupal\views\Entity\View;
 /**
  * Class PageCacheTest.
  *
- * @package Drupal\Tests\views_advanced_cache\Functional
+ * @group views_advanced_cache
  */
 class PageCacheTest extends BrowserTestBase {
 

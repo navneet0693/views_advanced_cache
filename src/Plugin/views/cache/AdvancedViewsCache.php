@@ -159,7 +159,7 @@ class AdvancedViewsCache extends CachePluginBase {
       '#type' => 'textarea',
       '#title' => $this->t('Cache Tags'),
       '#description' => $this->t('List cache tags (separated by new lines) that should invalidate the cache for this view, separated by new lines. Note that this does not control the invalidation of custom tags.'),
-      '#default_value' => implode("\n", array_merge($cache_tags + $cache_tags_exclude)),
+      '#default_value' => implode("\n", array_merge($cache_tags, $cache_tags_exclude)),
     ];
 
     $optgroup_arguments = (string) t('Arguments');

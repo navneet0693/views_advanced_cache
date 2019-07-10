@@ -5,9 +5,9 @@ core: 8.x
 type: module
 hidden: true
 dependencies:
-- node
-- text
-- field
-- menu_ui
-- views_advanced_cache
-- views
+- drupal:node
+- drupal:text
+- drupal:field
+- drupal:menu_ui
+- drupal:views
+- views_advanced_cache:views_advanced_cache

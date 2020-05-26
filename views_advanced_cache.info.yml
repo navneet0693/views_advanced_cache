@@ -2,5 +2,6 @@ name: Views Advanced Cache
 type: module
 description: Contains an advanced views cache plugin that exposes cache tag, cache context, and output / results caching configuration.
 core: 8.x
+core_version_requirement: ^8 || ^9
 dependencies:
 - drupal:views

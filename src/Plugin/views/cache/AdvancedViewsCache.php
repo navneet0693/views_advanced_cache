@@ -142,7 +142,7 @@ class AdvancedViewsCache extends CachePluginBase {
    */
   public function buildCacheTagOptions(array &$form, FormStateInterface $form_state) {
     $cache_tags_docs = Link::fromTextAndUrl('documentation', Url::fromUri('https://www.drupal.org/docs/8/api/cache-api/cache-tags'))->toString();
-    $cache_tags_exclude = array_map(function ($c) { return '- ' . $c; }, $this->options['cache_tags_exclude']);
+    $cache_tags_exclude = array_map(function ($c) { return "- $c"; }, $this->options['cache_tags_exclude']);
     // Filter out some of the default cache tags we don't care about.
     // This should mostly be the entity_type list cache tags ex. node_list.
     $default_cache_tags = array_diff(parent::getCacheTags(), ['extensions', 'config:views.view.' . $this->view->id()]);
@@ -210,7 +210,7 @@ class AdvancedViewsCache extends CachePluginBase {
       '#open' => TRUE,
     ];
 
-    $cache_contexts_exclude = array_map(function ($c) { return '- ' . $c; }, $this->options['cache_contexts_exclude']);
+    $cache_contexts_exclude = array_map(function ($c) { return "- $c"; }, $this->options['cache_contexts_exclude']);
     $form['cache_contexts']['cache_contexts'] = [
       '#type' => 'textarea',
       '#title' => $this->t('Cache Contexts'),

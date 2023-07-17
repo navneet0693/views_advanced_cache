@@ -2,10 +2,5 @@
   "name": "drupal/views_advanced_cache",
   "type": "drupal-module",
   "description": "Take more control of views caching with the ability to specify cache tags and contexts.",
-  "license": "GPL-2.0+",
-  "extra": {
-    "branch-alias": {
-      "dev-8.x-1.x": "1.x-dev"
-    }
-  }
+  "license": "GPL-2.0+"
 }

@@ -16,7 +16,7 @@ class PageCacheTest extends BrowserTestBase {
 
   use AssertPageCacheContextsAndTagsTrait;
 
-  public static $modules = ['views', 'views_advanced_cache_test'];
+  protected static $modules = ['views', 'views_advanced_cache_test'];
 
   protected $strictConfigSchema = FALSE;
 
@@ -52,7 +52,7 @@ class PageCacheTest extends BrowserTestBase {
     ];
 
     $url = Url::fromRoute('view.views_advanced_cache_test.page_test', []);
-    $this->assertPageCacheContextsAndTags($url, $cache_contexts, array_merge($cache_tags, $node_cache_tags));
+    $this->assertPageCacheContextsAndTags($url, $cache_contexts, [...$cache_tags, ...$node_cache_tags]);
 
     // Then remove our changes to the contexts and tags,
     $display_name = 'page_test';
@@ -85,7 +85,7 @@ class PageCacheTest extends BrowserTestBase {
     ];
 
     $url = Url::fromRoute('view.views_advanced_cache_test.page_test', []);
-    $this->assertPageCacheContextsAndTags($url, $cache_contexts, array_merge($cache_tags, $node_cache_tags));
+    $this->assertPageCacheContextsAndTags($url, $cache_contexts, [...$cache_tags, ...$node_cache_tags]);
   }
 
 }

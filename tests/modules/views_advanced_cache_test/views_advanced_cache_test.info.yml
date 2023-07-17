@@ -1,7 +1,7 @@
 name: Views Advanced Cache Tests
 type: module
 description: Test configuration for the views_advanced_cache module.
-core: 8.x
+core_version_requirement: ^9 || ^10
 hidden: true
 dependencies:
 - drupal:node

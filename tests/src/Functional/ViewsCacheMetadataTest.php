@@ -15,11 +15,12 @@ use Drupal\views\Entity\View;
  */
 class ViewsCacheMetadataTest extends BrowserTestBase {
 
-  public static $modules = ['views', 'views_advanced_cache_test'];
+  protected static $modules = ['views', 'views_advanced_cache_test'];
 
   protected $strictConfigSchema = FALSE;
 
   // # Tests.
+
   /**
    * Test changing the view cache metadata.
    */
@@ -104,6 +105,7 @@ class ViewsCacheMetadataTest extends BrowserTestBase {
   }
 
   // # Helpers.
+
   /**
    * Build a renderable array for the view display.
    */
